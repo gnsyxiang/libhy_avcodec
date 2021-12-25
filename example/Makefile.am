@@ -55,6 +55,11 @@ _include_com    += $(HY_UTILS_INCS)
 _ldadd_com      += $(HY_UTILS_LIBS)
 endif
 
+if COMPILE_LIBHY_HAL
+_include_com    += $(HY_HAL_INCS)
+_ldadd_com      += $(HY_HAL_LIBS)
+endif
+
 bin_PROGRAMS                += hy_template_test
 hy_template_test_SOURCES    = $(_sources_com) hy_template_test.c
 hy_template_test_CPPFLAGS   = $(_cppflags_com)

@@ -39,10 +39,6 @@ _no_error_com   +=
 
 _include_com    += -I$(top_srcdir)/include
 
-if COMPILE_LIBHY_UTILS
-_include_com    += $(HY_UTILS_INCS)
-endif
-
 _sources_com    += module_a.c
 
 _cppflags_com   += $(_no_error_com) $(_include_com)
@@ -52,11 +48,19 @@ _cflags_com     +=
 _cxxflags_com   +=
 
 _ldflags_com    += \
-                   -export-symbols-regex 'Hy*' \
+                   -export-symbols-regex 'Hy*'              \
                    -version-info @current@:@revision@:@age@ \
                    $(LIB_LDFLAGS_COM)
 
 _ldadd_com      +=
+
+if COMPILE_LIBHY_UTILS
+_include_com    += $(HY_UTILS_INCS)
+endif
+
+if COMPILE_LIBHY_HAL
+_include_com    += $(HY_HAL_INCS)
+endif
 
 lib@project_name@_la_SOURCES    = $(_sources_com)
 lib@project_name@_la_CPPFLAGS   = $(_cppflags_com)
