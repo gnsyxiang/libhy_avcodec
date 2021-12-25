@@ -82,7 +82,7 @@ doxygen/
 *.lo
 *.la
 
-example/main
+example/hy_*test
 hy_avcodec.pc
 
 

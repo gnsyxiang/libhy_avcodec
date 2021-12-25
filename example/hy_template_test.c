@@ -2,7 +2,7 @@
  * 
  * Release under GPLv-3.0.
  * 
- * @file    main.c
+ * @file    hy_template_test.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
  * @date    20/10 2021 08:32
@@ -22,31 +22,36 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "module_a.h"
+#include "hy_hal/hy_module.h"
+#include "hy_hal/hy_hal_utils.h"
+#include "hy_hal/hy_mem.h"
+#include "hy_hal/hy_string.h"
+#include "hy_hal/hy_signal.h"
+#include "hy_hal/hy_type.h"
 
-#include "hy_utils/hy_module.h"
-#include "hy_utils/hy_mem.h"
-#include "hy_utils/hy_string.h"
-#include "hy_utils/hy_signal.h"
-#include "hy_utils/hy_type.h"
-#include "hy_utils/hy_utils.h"
 #include "hy_utils/hy_log.h"
 
-#define ALONE_DEBUG 1
-
 typedef struct {
-    void *log_handle;
-    void *signal_handle;
+    void        *log_handle;
+    void        *signal_handle;
+
+    hy_s32_t    exit_flag;
 } _main_context_t;
 
 static void _signal_error_cb(void *args)
 {
     LOGE("------error cb\n");
+
+    _main_context_t *context = args;
+    context->exit_flag = 1;
 }
 
 static void _signal_user_cb(void *args)
 {
     LOGE("------user cb\n");
+
+    _main_context_t *context = args;
+    context->exit_flag = 1;
 }
 
 static void _module_destroy(_main_context_t **context_pp)
@@ -61,36 +66,37 @@ static void _module_destroy(_main_context_t **context_pp)
 
     RUN_DESTROY(module);
 
-    HY_FREE_PP(context_pp);
+    HY_MEM_FREE_PP(context_pp);
 }
 
 static _main_context_t *_module_create(void)
 {
-    _main_context_t *context = HY_MALLOC_RET_VAL(_main_context_t *, sizeof(*context), NULL);
+    _main_context_t *context = HY_MEM_MALLOC_RET_VAL(_main_context_t *,
+            sizeof(*context), NULL);
 
     HyLogConfig_t log_config;
     log_config.save_config.buf_len      = 512;
     log_config.save_config.level        = HY_LOG_LEVEL_TRACE;
-    log_config.save_config.color_output = HY_FLAG_ENABLE;
+    log_config.save_config.color_enable = HY_TYPE_FLAG_ENABLE;
 
-    int8_t signal_error_num[HY_SIGNAL_NUM_MAX_32] = {
+    int8_t signal_error[HY_SIGNAL_NUM_MAX_32] = {
         SIGQUIT, SIGILL, SIGTRAP, SIGABRT, SIGFPE,
         SIGSEGV, SIGBUS, SIGSYS, SIGXCPU, SIGXFSZ,
     };
 
-    int8_t signal_user_num[HY_SIGNAL_NUM_MAX_32] = {
+    int8_t signal_user[HY_SIGNAL_NUM_MAX_32] = {
         SIGINT, SIGTERM, SIGUSR1, SIGUSR2,
     };
 
     HySignalConfig_t signal_config;
     memset(&signal_config, 0, sizeof(signal_config));
-    HY_MEMCPY(&signal_config.error_num, signal_error_num);
-    HY_MEMCPY(&signal_config.user_num, signal_user_num);
-    signal_config.save_config.appname       = "template";
-    signal_config.save_config.coredump_path = "./";
-    signal_config.save_config.error_cb      = _signal_error_cb;
-    signal_config.save_config.user_cb       = _signal_user_cb;
-    signal_config.save_config.args          = context;
+    HY_MEMCPY(signal_config.error_num, signal_error, sizeof(signal_error));
+    HY_MEMCPY(signal_config.user_num, signal_user, sizeof(signal_user));
+    signal_config.save_config.app_name          = "template";
+    signal_config.save_config.coredump_path     = "./";
+    signal_config.save_config.error_cb          = _signal_error_cb;
+    signal_config.save_config.user_cb           = _signal_user_cb;
+    signal_config.save_config.args              = context;
 
     // note: 增加或删除要同步到module_destroy_t中
     module_create_t module[] = {
@@ -113,7 +119,7 @@ int main(int argc, char *argv[])
 
     LOGE("version: %s, data: %s, time: %s \n", "0.1.0", __DATE__, __TIME__);
 
-    while (1) {
+    while (!context->exit_flag) {
         sleep(1);
     }
 
@@ -121,4 +127,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
