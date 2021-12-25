@@ -39,7 +39,8 @@ _no_error_com   +=
 
 _include_com    += -I$(top_srcdir)/include
 
-_sources_com    += module_a.c
+_sources_com    += \
+                   hy_g711.c
 
 _cppflags_com   += $(_no_error_com) $(_include_com)
 

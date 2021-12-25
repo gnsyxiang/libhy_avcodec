@@ -60,6 +60,14 @@ _include_com    += $(HY_HAL_INCS)
 _ldadd_com      += $(HY_HAL_LIBS)
 endif
 
+bin_PROGRAMS                += hy_g711_test
+hy_g711_test_SOURCES        = $(_sources_com) hy_g711_test.c
+hy_g711_test_CPPFLAGS       = $(_cppflags_com)
+hy_g711_test_CFLAGS         = $(_cflags_com)
+hy_g711_test_CXXFLAGS       = $(_cxxflags_com)
+hy_g711_test_LDFLAGS        = $(_ldflags_com)
+hy_g711_test_LDADD          = $(_ldadd_com)
+
 bin_PROGRAMS                += hy_template_test
 hy_template_test_SOURCES    = $(_sources_com) hy_template_test.c
 hy_template_test_CPPFLAGS   = $(_cppflags_com)

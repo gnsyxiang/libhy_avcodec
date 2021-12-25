@@ -2,10 +2,10 @@
  * 
  * Release under GPLv-3.0.
  * 
- * @file    hy_template_test.c
+ * @file    hy_g711_test.c
  * @brief   
  * @author  gnsyxiang <gnsyxiang@163.com>
- * @date    20/10 2021 08:32
+ * @date    25/12 2021 19:03
  * @version v0.0.1
  * 
  * @since    note
@@ -13,9 +13,9 @@
  * 
  *     change log:
  *     NO.     Author              Date            Modified
- *     00      zhenquan.qiu        20/10 2021      create the file
+ *     00      zhenquan.qiu        25/12 2021      create the file
  * 
- *     last modified: 20/10 2021 08:32
+ *     last modified: 25/12 2021 19:03
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +30,8 @@
 #include "hy_hal/hy_type.h"
 
 #include "hy_utils/hy_log.h"
+
+#include "hy_g711.h"
 
 typedef struct {
     void        *log_handle;
@@ -109,6 +111,92 @@ static _main_context_t *_module_create(void)
     return context;
 }
 
+static void _g711_encode_test(void)
+{
+    #define _SAMPLE_POINT (160)
+    FILE *fp_pcm;
+    FILE *fp_g711;
+    hy_u32_t ret;
+    char pcm[_SAMPLE_POINT * sizeof(short)] = {0};
+    char g711[_SAMPLE_POINT] = {0};
+
+    fp_pcm = fopen("../res/test.pcm", "r");
+    if (!fp_pcm) {
+        LOGES("failed \n");
+        return ;
+    }
+
+    fp_g711 = fopen("../res/test.g711_alaw", "w");
+    if (!fp_g711) {
+        LOGES("failed \n");
+        return ;
+    }
+
+    while (1) {
+        HY_MEMSET(pcm, sizeof(pcm));
+        ret = fread(pcm, sizeof(short), _SAMPLE_POINT, fp_pcm);
+        if (ret == 0) {
+            LOGES("failed \n");
+            break;
+        }
+
+        HY_MEMSET(g711, sizeof(g711));
+        ret = HyG711Encode(HY_G711_A_LAW, pcm, ret * sizeof(short), g711);
+        fwrite(g711, sizeof(char), ret, fp_g711);
+    }
+
+    if (fp_pcm) {
+        fclose(fp_pcm);
+    }
+
+    if (fp_g711) {
+        fclose(fp_g711);
+    }
+}
+
+static void _g711_decode_test(void)
+{
+    #define _SAMPLE_POINT (160)
+    FILE *fp_pcm;
+    FILE *fp_g711;
+    hy_u32_t ret;
+    char g711[_SAMPLE_POINT] = {0};
+    char pcm[_SAMPLE_POINT * sizeof(short)] = {0};
+
+    fp_g711 = fopen("../res/test.g711_alaw", "r");
+    if (!fp_g711) {
+        LOGES("failed \n");
+        return ;
+    }
+
+    fp_pcm = fopen("../res/test_new.pcm", "w");
+    if (!fp_pcm) {
+        LOGES("failed \n");
+        return ;
+    }
+
+    while (1) {
+        HY_MEMSET(g711, sizeof(g711));
+        ret = fread(g711, sizeof(char), _SAMPLE_POINT, fp_g711);
+        if (ret == 0) {
+            LOGES("failed \n");
+            break;
+        }
+
+        HY_MEMSET(pcm, sizeof(pcm));
+        ret = HyG711Decode(HY_G711_A_LAW, g711, ret * sizeof(char), pcm);
+        fwrite(pcm, sizeof(char), ret, fp_pcm);
+    }
+
+    if (fp_pcm) {
+        fclose(fp_pcm);
+    }
+
+    if (fp_g711) {
+        fclose(fp_g711);
+    }
+}
+
 int main(int argc, char *argv[])
 {
     _main_context_t *context = _module_create();
@@ -118,6 +206,9 @@ int main(int argc, char *argv[])
     }
 
     LOGE("version: %s, data: %s, time: %s \n", "0.1.0", __DATE__, __TIME__);
+
+    _g711_encode_test();
+    _g711_decode_test();
 
     while (!context->exit_flag) {
         sleep(1);

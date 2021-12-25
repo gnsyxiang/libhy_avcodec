@@ -22,12 +22,21 @@
 # defining variables
 # ------------------
 _dist_file_com  =
+resdir          = $(prefix)/res
+res_DATA        =
+
+# ------------------
+# make install files
+# ------------------
+res_DATA        += \
+                   test.pcm
 
 # ---------------
 # make dist files
 # ---------------
 _dist_file_com  += \
-                   Doxyfile \
+                   test.pcm             \
+                   Doxyfile             \
                    get_project_info.sh
-EXTRA_DIST      = $(_dist_file_com)
 
+EXTRA_DIST      = $(_dist_file_com)
