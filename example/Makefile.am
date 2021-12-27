@@ -60,6 +60,11 @@ _include_com    += $(HY_HAL_INCS)
 _ldadd_com      += $(HY_HAL_LIBS)
 endif
 
+if COMPILE_LIBSPEEXDSP
+_include_com    += $(SPEEXDSP_INCS)
+_ldadd_com      += $(SPEEXDSP_LIBS)
+endif
+
 bin_PROGRAMS                += hy_g711_test
 hy_g711_test_SOURCES        = $(_sources_com) hy_g711_test.c
 hy_g711_test_CPPFLAGS       = $(_cppflags_com)
