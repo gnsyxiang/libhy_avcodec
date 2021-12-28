@@ -65,6 +65,8 @@ _include_com    += $(SPEEXDSP_INCS)
 _ldadd_com      += $(SPEEXDSP_LIBS)
 endif
 
+_ldadd_com      += -lcjson
+
 bin_PROGRAMS                += hy_g711_test
 hy_g711_test_SOURCES        = $(_sources_com) hy_g711_test.c
 hy_g711_test_CPPFLAGS       = $(_cppflags_com)
